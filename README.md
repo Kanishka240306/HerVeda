@@ -1,170 +1,132 @@
-# Herveda - PCOS & Period Tracking for Women in India
+# 🌸 HerVeda — PCOS & Period Tracking for Women in India
 
-Herveda is an elegant, modern landing page and waitlist signup system for a PCOS and period tracking application designed specifically for women in India.
+<p align="center">
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white"/>
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white"/>
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"/>
+  <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge"/>
+</p>
 
-## 🌸 Features
+<p align="center">
+  <b>A women's health app built for Indian women — tackling PCOS with regional diet plans, symptom tracking, and multilingual support.</b>
+</p>
 
-- **Beautiful Landing Page**: Clean, responsive design with wine, amber, and rose-gold color scheme
-- **Email Validation**: Real-time validation with DNS domain verification
-- **Waitlist System**: Secure email collection with duplicate prevention
-- **Modern Backend**: Built with Dart and Shelf framework
-- **Responsive Design**: Works perfectly on mobile, tablet, and desktop
+---
+
+## 💡 Why HerVeda?
+
+Over 10 crore Indian women are affected by PCOS, yet most period tracking apps are designed for Western users — no regional diet plans, no Hindi/Tamil support, no understanding of Indian lifestyle.
+
+HerVeda is built differently. It is made in India, for India.
+
+---
+
+## ✨ Features
+
+### ✅ Currently Built
+- 🏠 **Landing Page** — Responsive design with waitlist signup (HTML5 + CSS3 + Vanilla JS)
+- 📧 **Email Waitlist System** — Real-time validation, DNS domain verification, duplicate prevention
+- 🩺 **PCOS Symptom Tracker** — Log daily symptoms, pain severity, period flow, mood, and notes
+- 🖥️ **Dart/Shelf Backend** — REST API with `/waitlist` and `/health` endpoints, JSON data storage
+- 📱 **Fully Responsive** — Works on mobile, tablet, and desktop
+
+### 🔜 Coming Soon
+- 📅 Period cycle tracking & predictions
+- 🥗 Personalized North & South Indian diet plans for PCOS
+- 🤖 AI assistant chatbot for PCOS guidance
+- 👩‍⚕️ Doctor booking & teleconsultation
+- 🌐 Multilingual support (Hindi, Tamil)
+- 👥 Anonymous community forum
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6)
-- **Backend**: Dart with Shelf web framework
-- **Data Storage**: JSON file (waitlist.json)
-- **Server**: Local development at http://localhost:3000
+| Layer | Technology |
+|-------|-----------|
+| Frontend | HTML5, CSS3, Vanilla JavaScript (ES6) |
+| Backend | Dart with Shelf framework |
+| Data Storage | JSON file (waitlist.json) |
+| Fonts | Cormorant Garamond, Outfit (Google Fonts) |
+| Hosting | Local dev — deployment coming soon |
 
-## 📋 Project Structure
+---
+
+## 📁 Project Structure
 
 ```
 HerVeda/
-├── index.html          # Main landing page
-├── style.css           # Complete styling
-├── script.js           # Frontend interactivity
+├── index.html              # Landing page + waitlist
+├── symptom-tracker.html    # PCOS symptom tracker
+├── style.css               # Global styles
+├── script.js               # Frontend JS
+├── server.js               # Node.js server (alt backend)
 ├── bin/
-│   └── server.dart     # Dart backend server
-├── pubspec.yaml        # Dart dependencies
-├── .gitignore         # Git configuration
-└── README.md          # This file
+│   └── server.dart         # Dart/Shelf backend
+├── pubspec.yaml            # Dart dependencies
+├── waitlist.json           # Email waitlist data
+└── README.md
 ```
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Dart SDK (3.0.0 or higher)
+- Dart SDK 3.0+
 - Git
 
-### Installation
+### Run Locally
 
-1. **Clone the repository**
-   ```bash
-   git clone git@github.com:Kanishka240306/HerVeda.git
-   cd HerVeda
-   ```
-
-2. **Install Dart dependencies**
-   ```bash
-   dart pub get
-   ```
-
-3. **Run the server**
-   ```bash
-   dart run bin/server.dart
-   ```
-
-4. **Access the application**
-   Open your browser and go to: `http://localhost:3000`
-
-## 📧 API Endpoints
-
-### POST /waitlist
-Submit an email to the waitlist.
-
-**Request:**
-```json
-{
-  "email": "user@example.com"
-}
+```bash
+git clone https://github.com/Kanishka240306/HerVeda.git
+cd HerVeda
+dart pub get
+dart run bin/server.dart
 ```
 
-**Response (Success):**
-```json
-{
-  "success": true,
-  "message": "Email added to waitlist"
-}
-```
-
-**Response (Error):**
-```json
-{
-  "success": false,
-  "message": "Invalid email format" // or other error message
-}
-```
-
-**Status Codes:**
-- `200` - Email successfully added
-- `400` - Invalid email format or validation failed
-- `409` - Email already exists in waitlist
-
-### GET /health
-Health check endpoint.
-
-**Response:**
-```json
-{
-  "status": "ok",
-  "service": "Herveda backend"
-}
-```
-
-## ✨ Features in Detail
-
-### Email Validation
-- Format validation using regex
-- DNS domain verification (ensures domain exists)
-- Duplicate email prevention
-- Timestamps stored in ISO 8601 format
-
-### User Interface
-- Smooth mobile menu toggle
-- Loading states on form submission
-- Success/error message display
-- Responsive design for all screen sizes
-
-## 📊 Data Storage
-
-Emails are stored in `waitlist.json` with the following format:
-```json
-[
-  {
-    "email": "user@example.com",
-    "createdAt": "2026-06-25T10:30:00.000Z"
-  }
-]
-```
-
-## 🎨 Design
-
-- **Primary Color**: Wine (#5c2430)
-- **Secondary Color**: Amber (#c9924a)
-- **Accent Color**: Rose-gold (#c4898f)
-- **Background**: Cream (#faf6f2)
-
-**Typography:**
-- Display: Cormorant Garamond
-- Body: Outfit
-
-## 🔐 Security
-
-- Email validation prevents invalid data entry
-- DNS verification ensures legitimate domains
-- Duplicate prevention avoids spam
-- Input sanitization on backend
-
-## 📱 Browser Support
-
-- Chrome/Edge (latest)
-- Firefox (latest)
-- Safari (latest)
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-## 📝 License
-
-This project is currently proprietary. All rights reserved.
-
-## 👤 Author
-
-Created by Kanishka Sharma
-
-## 📧 Contact
-
-For questions or feedback, please reach out through the GitHub repository.
+Open `http://localhost:3000` in your browser.
 
 ---
 
-**Status**: The Herveda landing page and backend are fully functional and ready for deployment.
+## 🎨 Design System
+
+| Token | Value |
+|-------|-------|
+| Primary (Wine) | `#5c2430` |
+| Accent (Amber) | `#c9924a` |
+| Soft (Rose-gold) | `#c4898f` |
+| Background | `#faf6f2` |
+| Display Font | Cormorant Garamond |
+| Body Font | Outfit |
+
+---
+
+## 📊 API Endpoints
+
+### `POST /waitlist`
+```json
+{ "email": "user@example.com" }
+```
+Returns `200` on success, `409` if email exists, `400` for invalid input.
+
+### `GET /health`
+```json
+{ "status": "ok", "service": "Herveda backend" }
+```
+
+---
+
+## 👤 About the Developer
+
+Built by **Kanishka Sharma** — B.Tech Data Science student at MIET, AKTU University.
+Published researcher | Women's health advocate | Builder
+
+🔗 [LinkedIn](https://www.linkedin.com/in/kanishka-sharma-623b53335)
+
+---
+
+## 📝 License
+
+Proprietary — All rights reserved © Kanishka Sharma
