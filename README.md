@@ -111,12 +111,13 @@ json{ "status": "ok", "service": "Herveda backend" }
 
 👤 About the Team
 
-Built by Kanishka Sharma — B.Tech Data Science student at MIET, AKTU University.
+Kanishka Sharma — Frontend & Project Lead
+B.Tech Data Science student at MIET, AKTU University
 Published researcher | Women's health advocate | Builder
-
 🔗 LinkedIn
 
-Anushka — Backend Developer (Python/Flask)
+Anushka — Backend Developer
+Building the Python/Flask backend, API, and database integration
 
 
 📝 License
