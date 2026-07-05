@@ -1,125 +1,141 @@
-🌸 HerVeda — PCOS & Period Tracking for Women in India
+<div align="center">
 
-<p align="center">
-  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white"/>
-  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white"/>
-  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"/>
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge"/>
-</p>
-<p align="center">
-  <b>A women's health app built for Indian women — tackling PCOS with regional diet plans, symptom tracking, and multilingual support.</b>
-</p>
+# 🌸 HerVeda — PCOS & Period Tracking for Women in India
 
-💡 Why HerVeda?
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
+![License](https://img.shields.io/badge/License-Proprietary-blue?style=for-the-badge)
 
-Over 10 crore Indian women are affected by PCOS, yet most period tracking apps are designed for Western users — no regional diet plans, no Hindi/Tamil support, no understanding of Indian lifestyle.
+**A women's health app built for Indian women — tackling PCOS with regional diet plans, symptom tracking, and multilingual support.**
 
-HerVeda is built differently. It is made in India, for India.
+</div>
 
+---
 
-✨ Features
+## 📌 About
 
-✅ Currently Built
+Over 10 crore Indian women are affected by PCOS, yet most period tracking apps are designed for Western users — no regional diet plans, no Hindi/Tamil support, no understanding of Indian lifestyle. HerVeda is built differently: made in India, for India.
 
+---
 
-🏠 Landing Page — Responsive design with waitlist signup (HTML5 + CSS3 + Vanilla JS)
-📧 Email Waitlist System — Real-time validation, DNS domain verification, duplicate prevention
-🩺 PCOS Symptom Tracker — Log daily symptoms, pain severity, period flow, mood, and notes
-🖥️ Python/Flask Backend — REST API with /waitlist and /health endpoints, JSON data storage
-📱 Fully Responsive — Works on mobile, tablet, and desktop
+## ✨ Features
 
+| Feature | Status |
+|---------|--------|
+| Landing Page (responsive) | ✅ Done |
+| Email Waitlist System (DNS validation + duplicate prevention) | ✅ Done |
+| PCOS Symptom Tracker (symptoms, flow, mood, notes) | ✅ Done |
+| Python/Flask Backend (`/waitlist`, `/health`) | ✅ Done |
+| Period cycle tracking & predictions | ⏳ Coming Soon |
+| Personalized North & South Indian diet plans | ⏳ Coming Soon |
+| Firebase Authentication (Email + Google) | ⏳ Coming Soon |
+| Firestore database (replacing JSON storage) | ⏳ Coming Soon |
+| AI assistant chatbot for PCOS guidance | ⏳ Coming Soon |
+| Doctor booking & teleconsultation | ⏳ Coming Soon |
+| Multilingual support (Hindi, Tamil) | ⏳ Coming Soon |
+| Anonymous community forum | ⏳ Coming Soon |
 
-🔜 Coming Soon
+---
 
+## 🛠️ Tech Stack
 
-📅 Period cycle tracking & predictions
-🥗 Personalized North & South Indian diet plans for PCOS
-🤖 AI assistant chatbot for PCOS guidance
-👩‍⚕️ Doctor booking & teleconsultation
-🌐 Multilingual support (Hindi, Tamil)
-👥 Anonymous community forum
-🔐 User accounts (Firebase Authentication)
-🗄️ Firestore database (replacing JSON file storage)
+| Layer | Technology |
+|-------|-----------|
+| Frontend | HTML5, CSS3, Vanilla JavaScript |
+| Backend | Python 3, Flask |
+| Database | JSON file (`waitlist.json`) — migrating to Firestore |
+| Fonts | Cormorant Garamond, Outfit (Google Fonts) |
+| Hosting | Local dev — deployment coming soon |
 
+---
 
+## 📁 Project Structure
 
-🛠️ Tech Stack
-
-LayerTechnologyFrontendHTML5, CSS3, Vanilla JavaScript (ES6)BackendPython 3 with FlaskData StorageJSON file (waitlist.json) — migrating to FirestoreFontsCormorant Garamond, Outfit (Google Fonts)HostingLocal dev — deployment coming soon
-
-
-📁 Project Structure
-
+```
 HerVeda/
-├── index.html              # Landing page + waitlist
-├── symptom-tracker.html    # PCOS symptom tracker
-├── style.css               # Global styles
-├── script.js               # Frontend JS
-├── app.py                  # Python/Flask backend
-├── requirements.txt        # Python dependencies
-├── waitlist.json           # Email waitlist data
+├── index.html              ← Landing page + waitlist
+├── symptom-tracker.html    ← PCOS symptom tracker
+├── style.css                ← Global styles
+├── script.js                ← Frontend JS
+├── app.py                   ← Main backend (Flask)
+├── requirements.txt         ← Python dependencies
+├── waitlist.json            ← Email waitlist data
+├── .gitignore
 └── README.md
+```
 
+---
 
-🚀 Getting Started
+## 🚀 How to Run
 
-Prerequisites
-
-
-Python 3.9+
-Git
-
-
-Run Locally
-
-bashgit clone https://github.com/Kanishka240306/HerVeda.git
+**1. Clone the repository**
+```bash
+git clone https://github.com/Kanishka240306/HerVeda.git
 cd HerVeda
+```
 
-# create and activate a virtual environment
+**2. Create and activate a virtual environment**
+```bash
 python -m venv venv
 venv\Scripts\activate        # Windows
 # source venv/bin/activate   # macOS/Linux
+```
 
-# install dependencies
+**3. Install dependencies**
+```bash
 pip install -r requirements.txt
+```
 
-# run the server
+**4. Run the app**
+```bash
 python app.py
+```
 
-Open http://localhost:3000 in your browser.
+Open `http://localhost:3000` in your browser.
 
+---
 
-🎨 Design System
+## 🎨 Design System
 
-TokenValuePrimary (Wine)#5c2430Accent (Amber)#c9924aSoft (Rose-gold)#c4898fBackground#faf6f2Display FontCormorant GaramondBody FontOutfit
+| Token | Value |
+|-------|-------|
+| Primary (Wine) | `#5c2430` |
+| Accent (Amber) | `#c9924a` |
+| Soft (Rose-gold) | `#c4898f` |
+| Background | `#faf6f2` |
+| Display Font | Cormorant Garamond |
+| Body Font | Outfit |
 
+---
 
-📊 API Endpoints
+## 📊 API Endpoints
 
-POST /waitlist
+**`POST /waitlist`**
+```json
+{ "email": "user@example.com" }
+```
+Returns `200` on success, `409` if email exists, `400` for invalid input.
 
-json{ "email": "user@example.com" }
+**`GET /health`**
+```json
+{ "status": "ok", "service": "Herveda backend" }
+```
 
-Returns 200 on success, 409 if email exists, 400 for invalid input.
+---
 
-GET /health
+## 👥 Team
 
-json{ "status": "ok", "service": "Herveda backend" }
+| Name | Role |
+|------|------|
+| **Kanishka Sharma** — [LinkedIn](https://www.linkedin.com/in/kanishka-sharma-623b53335/) | Frontend & Project Lead |
+| **Anushka** — [LinkedIn](https://www.linkedin.com/in/anushka-773aa5337/) | Backend Developer (Python/Flask) |
 
+---
 
-👤 About the Team
-
-Kanishka Sharma — Frontend & Project Lead
-B.Tech Data Science student at MIET, AKTU University
-Published researcher | Women's health advocate | Builder
-🔗 LinkedIn
-
-Anushka — Backend Developer
-Building the Python/Flask backend, API, and database integration
-
-
-📝 License
+## 📝 License
 
 Proprietary — All rights reserved © Kanishka Sharma
