@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="form-card">
+  <h1>Wellbeing assessment</h1>
+  <p>Answer a few gentle prompts to better understand how you’re feeling today.</p>
+  <form method="post" action="{{ url_for('assessment') }}">
+    <label>
+      Energy level
+      <select name="energy">
+        <option value="high" {% if form_data.energy|default('') == 'high' %}selected{% endif %}>High</option>
+        <option value="medium" {% if form_data.energy|default('') == 'medium' %}selected{% endif %}>Medium</option>
+        <option value="low" {% if form_data.energy|default('') == 'low' %}selected{% endif %}>Low</option>
+      </select>
+    </label>
+    <label>
+      Stress level
+      <select name="stress">
+        <option value="low" {% if form_data.stress|default('') == 'low' %}selected{% endif %}>Low</option>
+        <option value="medium" {% if form_data.stress|default('') == 'medium' %}selected{% endif %}>Medium</option>
+        <option value="high" {% if form_data.stress|default('') == 'high' %}selected{% endif %}>High</option>
+      </select>
+    </label>
+    <label>
+      Notes
+      <textarea name="notes" rows="4">{{ form_data.notes|default('') }}</textarea>
+    </label>
+    <button class="button primary" type="submit">Submit assessment</button>
+  </form>
+</section>
+{% endblock %}

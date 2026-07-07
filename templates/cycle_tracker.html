@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="form-card">
+  <h1>Cycle tracker</h1>
+  <p>Log your symptoms and notice what helps you feel most supported.</p>
+  <form method="post" action="{{ url_for('cycle_tracker') }}">
+    <label>
+      Date
+      <input type="date" name="date" value="{{ form_data.date|default('') }}" required />
+    </label>
+    <label>
+      Flow level
+      <select name="flow">
+        <option value="light" {% if form_data.flow|default('') == 'light' %}selected{% endif %}>Light</option>
+        <option value="medium" {% if form_data.flow|default('') == 'medium' %}selected{% endif %}>Medium</option>
+        <option value="heavy" {% if form_data.flow|default('') == 'heavy' %}selected{% endif %}>Heavy</option>
+      </select>
+    </label>
+    <label>
+      Symptoms
+      <textarea name="symptoms" rows="4">{{ form_data.symptoms|default('') }}</textarea>
+    </label>
+    <button class="button primary" type="submit">Save entry</button>
+  </form>
+</section>
+{% endblock %}

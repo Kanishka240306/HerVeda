@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="form-card">
+  <h1>Create your account</h1>
+  <p>Join HerVeda to start tracking your cycle and building routines that support you.</p>
+  <form method="post" action="{{ url_for('signup') }}">
+    <label>
+      Name
+      <input type="text" name="name" value="{{ form_data.name|default('') }}" required />
+    </label>
+    <label>
+      Email
+      <input type="email" name="email" value="{{ form_data.email|default('') }}" required />
+    </label>
+    <label>
+      Password
+      <input type="password" name="password" required />
+    </label>
+    <label>
+      What do you want support with?
+      <select name="goal">
+        <option value="cycle tracking" {% if form_data.goal|default('') == 'cycle tracking' %}selected{% endif %}>Cycle tracking</option>
+        <option value="daily wellness" {% if form_data.goal|default('') == 'daily wellness' %}selected{% endif %}>Daily wellness</option>
+        <option value="stress relief" {% if form_data.goal|default('') == 'stress relief' %}selected{% endif %}>Stress relief</option>
+      </select>
+    </label>
+    <button class="button primary" type="submit">Sign up</button>
+  </form>
+</section>
+{% endblock %}

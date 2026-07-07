@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="form-card">
+  <h1>Daily plan</h1>
+  <p>Create a simple plan for the day with small, supportive actions.</p>
+  <form method="post" action="{{ url_for('daily_plan') }}">
+    <label>
+      Focus for today
+      <input type="text" name="focus" value="{{ form_data.focus|default('') }}" required />
+    </label>
+    <label>
+      Self-care action
+      <input type="text" name="action" value="{{ form_data.action|default('') }}" required />
+    </label>
+    <label>
+      Reminder note
+      <textarea name="reminder" rows="3">{{ form_data.reminder|default('') }}</textarea>
+    </label>
+    <button class="button primary" type="submit">Save plan</button>
+  </form>
+</section>
+{% endblock %}

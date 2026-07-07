@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="form-card">
+  <h1>Welcome back</h1>
+  <p>Log in to view your dashboard and continue your self-care journey.</p>
+  <form method="post" action="{{ url_for('login') }}">
+    <label>
+      Email
+      <input type="email" name="email" value="{{ form_data.email|default('') }}" required />
+    </label>
+    <label>
+      Password
+      <input type="password" name="password" required />
+    </label>
+    <button class="button primary" type="submit">Login</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HerVeda</title>
+    <meta name="description" content="Gentle wellness support for every phase of your cycle." />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <script defer src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="{{ url_for('landing') }}">HerVeda</a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="{{ url_for('landing') }}">Home</a>
+        <a href="{{ url_for('signup') }}">Sign up</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      </nav>
+    </header>
+
+    <main class="page-shell">
+      {% if message %}
+      <div class="message {{ message_type|default('info') }}" role="status">
+        {{ message }}
+      </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+      <p>HerVeda helps you feel grounded, informed, and supported.</p>
+    </footer>
+  </body>
+</html>

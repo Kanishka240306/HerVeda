@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-card">
+  <div class="hero-copy">
+    <p class="eyebrow">Holistic cycle care</p>
+    <h1>Understand your body with calm, daily guidance.</h1>
+    <p class="hero-text">
+      Track your cycle, reflect on your mood, and build a routine that supports your energy.
+    </p>
+    <div class="actions">
+      <a class="button primary" href="{{ url_for('signup') }}">Create account</a>
+      <a class="button secondary" href="{{ url_for('assessment') }}">Take assessment</a>
+    </div>
+  </div>
+  <div class="hero-panel">
+    <h2>What you can do</h2>
+    <ul>
+      <li>Log symptoms and patterns with ease</li>
+      <li>Receive gentle daily plan suggestions</li>
+      <li>Check in with your emotional wellbeing</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card-grid">
+  <article class="card">
+    <h3>Cycle tracking</h3>
+    <p>Keep a simple log of your flow, energy, and symptoms.</p>
+    <a href="{{ url_for('cycle_tracker') }}">Open tracker</a>
+  </article>
+  <article class="card">
+    <h3>Daily plan</h3>
+    <p>Build a mindful plan for rest, movement, hydration, and care.</p>
+    <a href="{{ url_for('daily_plan') }}">See plan</a>
+  </article>
+  <article class="card">
+    <h3>Wellbeing assessment</h3>
+    <p>Get a gentle snapshot of how your body and mind are feeling.</p>
+    <a href="{{ url_for('assessment') }}">Start assessment</a>
+  </article>
+</section>
+{% endblock %}
