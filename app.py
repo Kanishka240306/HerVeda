@@ -13,12 +13,33 @@ import re
 from datetime import datetime, timezone
 
 from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(BASE_DIR, "waitlist.json")
 PORT = int(os.environ.get("PORT", 3000))
 
+# Only these origins are allowed to call this API from a browser.
+# Add your real deployed frontend domain here once you deploy.
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
 app = Flask(__name__, static_folder=BASE_DIR, static_url_path="")
+
+# Lock down CORS to only the origins listed above (instead of "*")
+CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
+
+# Rate limiting: caps requests per IP address to prevent spam/abuse
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://",
+)
 
 EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
@@ -86,6 +107,7 @@ def write_waitlist(waitlist):
 
 
 @app.route("/waitlist", methods=["POST"])
+@limiter.limit("5 per minute")
 def waitlist():
     body = request.get_json(silent=True) or {}
     email = body.get("email", "")

@@ -1,2 +1,4 @@
 Flask==3.0.3
 dnspython==2.6.1
+Flask-Cors==4.0.1
+Flask-Limiter==3.8.0
