@@ -23,13 +23,15 @@ HerVeda is a women’s wellness experience built to make cycle tracking and dail
 
 ## ✨ What’s Included
 
-- Responsive landing page
-- Signup and login forms that POST directly to Flask routes
+- Responsive landing page with mobile-first design
+- Signup and login forms that POST directly to Flask routes with data persistence
 - Dashboard for daily wellbeing check-ins
-- Cycle tracker for symptoms and flow
-- Wellbeing assessment form
-- Daily plan builder for self-care routines
+- Cycle tracker for tracking symptoms, flow, and dates
+- Wellbeing assessment form with energy and stress tracking
+- Daily plan builder for creating personalized self-care routines
+- Real data persistence: all form submissions saved to JSON files with timestamps
 - Waitlist submission endpoint and health check endpoint
+- Wine-themed color scheme optimized for mobile devices
 
 ---
 
@@ -48,23 +50,25 @@ HerVeda is a women’s wellness experience built to make cycle tracking and dail
 
 ```text
 HerVeda/
-├── app.py
-├── requirements.txt
-├── waitlist.json
+├── app.py                          # Flask backend with all route handlers
+├── requirements.txt                # Python dependencies
+├── waitlist.json                   # Email waitlist storage
+├── data/
+│   └── user_data.json              # Form submission data (signup, login, etc.)
 ├── static/
 │   ├── css/
-│   │   └── style.css
+│   │   └── style.css               # Mobile-first responsive styling
 │   └── js/
-│       └── script.js
+│       └── script.js               # Form UX enhancements
 ├── templates/
-│   ├── base.html
-│   ├── landing.html
-│   ├── signup.html
-│   ├── login.html
-│   ├── dashboard.html
-│   ├── cycle_tracker.html
-│   ├── assessment.html
-│   └── daily_plan.html
+│   ├── base.html                   # Layout template with navbar & footer
+│   ├── landing.html                # Welcome page with feature cards
+│   ├── signup.html                 # User registration form
+│   ├── login.html                  # User login form
+│   ├── dashboard.html              # Daily wellbeing check-in
+│   ├── cycle_tracker.html          # Cycle symptoms & flow tracker
+│   ├── assessment.html             # Wellbeing assessment
+│   └── daily_plan.html             # Daily self-care plan builder
 ├── .gitignore
 └── README.md
 ```
@@ -102,24 +106,50 @@ Open http://localhost:3000 in your browser.
 
 ## 🌐 Main Routes
 
-- GET / → landing page
-- GET/POST /signup → signup form
-- GET/POST /login → login form
-- GET/POST /dashboard → dashboard check-in
-- GET/POST /cycle-tracker → cycle tracker entry
-- GET/POST /assessment → wellbeing assessment
-- GET/POST /daily-plan → daily plan form
-- POST /waitlist → waitlist submission
-- GET /health → health check
+| Method | Route | Purpose |
+|--------|-------|----------|
+| GET | `/` | Landing page |
+| GET/POST | `/signup` | User registration with data persistence |
+| GET/POST | `/login` | User login form |
+| GET/POST | `/dashboard` | Daily wellbeing check-in |
+| GET/POST | `/cycle-tracker` | Cycle symptoms and flow tracking |
+| GET/POST | `/assessment` | Wellbeing assessment form |
+| GET/POST | `/daily-plan` | Daily self-care plan builder |
+| POST | `/waitlist` | Email waitlist submission |
+| GET | `/health` | Health check endpoint
 
 ---
 
 ## � How It Works
 
-1. A user lands on the welcome page and can explore the app’s wellness tools.
-2. They sign up or log in to access their personal dashboard.
-3. They can track symptoms, complete a wellbeing assessment, and create a daily care plan.
-4. Each form submits directly to Flask routes and re-renders the page with confirmation feedback.
+1. A user lands on the welcome page and explores the app's wellness tools.
+2. They sign up or log in — form data is saved to `data/user_data.json` with a UTC timestamp.
+3. They can track cycle symptoms/flow, complete wellbeing assessments, and create daily care plans.
+4. Each form submits directly to Flask routes (POST), validates data, persists to JSON, then re-renders with confirmation feedback.
+5. All user data is stored locally in JSON format with timestamps for each entry.
+
+## 💾 Data Storage
+
+Form submissions are automatically saved to `data/user_data.json` with the following structure:
+
+```json
+{
+  "signup": [
+    {"name": "...", "email": "...", "goal": "...", "createdAt": "ISO timestamp"},
+    ...
+  ],
+  "login": [
+    {"email": "...", "createdAt": "ISO timestamp"},
+    ...
+  ],
+  "dashboard": [...],
+  "cycle_tracker": [...],
+  "assessment": [...],
+  "daily_plan": [...]
+}
+```
+
+Each entry includes a UTC `createdAt` timestamp for data tracking.
 
 ---
 
