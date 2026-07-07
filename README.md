@@ -114,7 +114,16 @@ Open http://localhost:3000 in your browser.
 
 ---
 
-## 👥 Team
+## � How It Works
+
+1. A user lands on the welcome page and can explore the app’s wellness tools.
+2. They sign up or log in to access their personal dashboard.
+3. They can track symptoms, complete a wellbeing assessment, and create a daily care plan.
+4. Each form submits directly to Flask routes and re-renders the page with confirmation feedback.
+
+---
+
+## �👥 Team
 
 | Name | Role |
 |------|------|
