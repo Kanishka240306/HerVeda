@@ -1,26 +1,28 @@
 """
 HerVeda backend - Flask version
-Replicates the behavior of server.js:
  - Serves the static frontend (index.html, style.css, script.js, etc.)
- - POST /waitlist   -> validates email (syntax + real DNS domain check), stores to waitlist.json
+ - POST /waitlist   -> validates email (syntax + real DNS domain check), stores to Firestore
  - GET  /health     -> simple health check
+
+Data is stored in Firestore (Google Cloud) instead of a local JSON file.
+Requires firebase-service-account.json in the same folder as this file
+(never commit this file to git - it's a secret admin credential).
 """
 
-import json
 import os
 import socket
 import re
 from datetime import datetime, timezone
 
-from flask import Flask, request, jsonify, render_template, redirect, url_for
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(BASE_DIR, "waitlist.json")
-DATA_DIR = os.path.join(BASE_DIR, "data")
-USER_DATA_FILE = os.path.join(DATA_DIR, "user_data.json")
+SERVICE_ACCOUNT_FILE = os.path.join(BASE_DIR, "firebase-service-account.json")
 PORT = int(os.environ.get("PORT", 3000))
 
 # Only these origins are allowed to call this API from a browser.
@@ -30,7 +32,7 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 
-app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "static"), template_folder=os.path.join(BASE_DIR, "templates"))
+app = Flask(__name__, static_folder=BASE_DIR, static_url_path="")
 
 # Lock down CORS to only the origins listed above (instead of "*")
 CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
@@ -42,6 +44,19 @@ limiter = Limiter(
     default_limits=["200 per day", "50 per hour"],
     storage_uri="memory://",
 )
+
+# --- Firebase / Firestore setup ---
+if not os.path.exists(SERVICE_ACCOUNT_FILE):
+    raise RuntimeError(
+        "firebase-service-account.json not found. "
+        "Download it from Firebase Console > Project Settings > Service Accounts, "
+        "and place it in the same folder as app.py."
+    )
+
+cred = credentials.Certificate(SERVICE_ACCOUNT_FILE)
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+WAITLIST_COLLECTION = "waitlist"
 
 EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
@@ -89,61 +104,22 @@ def has_valid_email_domain(domain: str) -> bool:
             return False
 
 
-def read_waitlist():
-    if not os.path.exists(DATA_FILE):
-        return []
-    try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            content = f.read().strip()
-            if not content:
-                return []
-            data = json.loads(content)
-            return data if isinstance(data, list) else []
-    except (json.JSONDecodeError, OSError):
-        return []
+def waitlist_entry_exists(email: str) -> bool:
+    doc = db.collection(WAITLIST_COLLECTION).document(email).get()
+    return doc.exists
 
 
-def write_waitlist(waitlist):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(waitlist, f, indent=2)
-
-
-def ensure_data_dir():
-    os.makedirs(DATA_DIR, exist_ok=True)
-
-
-def read_user_data():
-    ensure_data_dir()
-    if not os.path.exists(USER_DATA_FILE):
-        return {"signup": [], "login": [], "dashboard": [], "cycle_tracker": [], "assessment": [], "daily_plan": []}
-    try:
-        with open(USER_DATA_FILE, "r", encoding="utf-8") as f:
-            content = f.read().strip()
-            if not content:
-                return {"signup": [], "login": [], "dashboard": [], "cycle_tracker": [], "assessment": [], "daily_plan": []}
-            data = json.loads(content)
-            return {
-                "signup": data.get("signup", []),
-                "login": data.get("login", []),
-                "dashboard": data.get("dashboard", []),
-                "cycle_tracker": data.get("cycle_tracker", []),
-                "assessment": data.get("assessment", []),
-                "daily_plan": data.get("daily_plan", []),
-            }
-    except (json.JSONDecodeError, OSError):
-        return {"signup": [], "login": [], "dashboard": [], "cycle_tracker": [], "assessment": [], "daily_plan": []}
-
-
-def write_user_data(data):
-    ensure_data_dir()
-    with open(USER_DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-
-
-@app.route("/debug", methods=["GET"])
-def debug():
-    print("DEBUG: Debug endpoint called")
-    return "Debug endpoint works"
+def save_waitlist_entry(email: str):
+    """
+    Uses the email itself as the Firestore document ID.
+    This makes duplicate-prevention atomic and race-safe (unlike the old
+    JSON file approach, where two simultaneous submissions could both read
+    the file before either had written, silently losing one entry).
+    """
+    db.collection(WAITLIST_COLLECTION).document(email).set({
+        "email": email,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    })
 
 
 @app.route("/waitlist", methods=["POST"])
@@ -168,24 +144,18 @@ def waitlist():
         return jsonify(success=False, message="Email domain does not appear to be valid."), 400
 
     try:
-        current_waitlist = read_waitlist()
+        already_exists = waitlist_entry_exists(trimmed_email)
     except Exception as e:
-        app.logger.error(f"Unable to read waitlist file: {e}")
+        app.logger.error(f"Unable to check Firestore for existing entry: {e}")
         return jsonify(success=False, message="Server error reading data."), 500
 
-    if any(entry.get("email") == trimmed_email for entry in current_waitlist):
+    if already_exists:
         return jsonify(success=False, message="This email is already on the waitlist."), 409
 
-    entry = {
-        "email": trimmed_email,
-        "createdAt": datetime.now(timezone.utc).isoformat(),
-    }
-    current_waitlist.append(entry)
-
     try:
-        write_waitlist(current_waitlist)
+        save_waitlist_entry(trimmed_email)
     except Exception as e:
-        app.logger.error(f"Unable to save waitlist entry: {e}")
+        app.logger.error(f"Unable to save waitlist entry to Firestore: {e}")
         return jsonify(success=False, message="Server error saving data."), 500
 
     return jsonify(success=True, message="Thank you! We will be in touch soon.")
@@ -196,150 +166,9 @@ def health():
     return jsonify(status="ok", service="Herveda backend")
 
 
-def render_with_message(template_name, form_data=None, message=None, message_type="info"):
-    return render_template(
-        template_name,
-        form_data=form_data or {},
-        message=message,
-        message_type=message_type,
-    )
-
-
 @app.route("/", methods=["GET"])
-def landing():
-    return render_with_message("landing.html")
-
-
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        form_data = {
-            "name": request.form.get("name", "").strip(),
-            "email": request.form.get("email", "").strip(),
-            "goal": request.form.get("goal", "").strip(),
-        }
-        if not form_data["name"] or not form_data["email"] or not request.form.get("password", "").strip():
-            return render_with_message("signup.html", form_data=form_data, message="Please complete all fields to create your account.", message_type="error")
-
-        data = read_user_data()
-        data["signup"].append({
-            **form_data,
-            "createdAt": datetime.now(timezone.utc).isoformat(),
-        })
-        write_user_data(data)
-
-        return render_with_message("signup.html", form_data=form_data, message="Account created successfully. Welcome to HerVeda!", message_type="success")
-
-    return render_with_message("signup.html")
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        form_data = {
-            "email": request.form.get("email", "").strip(),
-        }
-        if not form_data["email"] or not request.form.get("password", "").strip():
-            return render_with_message("login.html", form_data=form_data, message="Please enter your email and password.", message_type="error")
-
-        data = read_user_data()
-        data["login"].append({
-            **form_data,
-            "createdAt": datetime.now(timezone.utc).isoformat(),
-        })
-        write_user_data(data)
-
-        return render_with_message("login.html", form_data=form_data, message="You are logged in. Welcome back!", message_type="success")
-
-    return render_with_message("login.html")
-
-
-@app.route("/dashboard", methods=["GET", "POST"])
-def dashboard():
-    if request.method == "POST":
-        form_data = {
-            "mood": request.form.get("mood", "").strip(),
-            "note": request.form.get("note", "").strip(),
-        }
-        if not form_data["mood"]:
-            return render_with_message("dashboard.html", form_data=form_data, message="Please select how you are feeling.", message_type="error")
-
-        data = read_user_data()
-        data["dashboard"].append({
-            **form_data,
-            "createdAt": datetime.now(timezone.utc).isoformat(),
-        })
-        write_user_data(data)
-
-        return render_with_message("dashboard.html", form_data=form_data, message="Your check-in has been saved.", message_type="success")
-
-    return render_with_message("dashboard.html")
-
-
-@app.route("/cycle-tracker", methods=["GET", "POST"])
-def cycle_tracker():
-    if request.method == "POST":
-        form_data = {
-            "date": request.form.get("date", "").strip(),
-            "flow": request.form.get("flow", "").strip(),
-            "symptoms": request.form.get("symptoms", "").strip(),
-        }
-        if not form_data["date"]:
-            return render_with_message("cycle_tracker.html", form_data=form_data, message="Please choose a date for your tracker entry.", message_type="error")
-
-        data = read_user_data()
-        data["cycle_tracker"].append({
-            **form_data,
-            "createdAt": datetime.now(timezone.utc).isoformat(),
-        })
-        write_user_data(data)
-
-        return render_with_message("cycle_tracker.html", form_data=form_data, message="Your cycle entry has been saved.", message_type="success")
-
-    return render_with_message("cycle_tracker.html")
-
-
-@app.route("/assessment", methods=["GET", "POST"])
-def assessment():
-    if request.method == "POST":
-        form_data = {
-            "energy": request.form.get("energy", "").strip(),
-            "stress": request.form.get("stress", "").strip(),
-            "notes": request.form.get("notes", "").strip(),
-        }
-        data = read_user_data()
-        data["assessment"].append({
-            **form_data,
-            "createdAt": datetime.now(timezone.utc).isoformat(),
-        })
-        write_user_data(data)
-
-        return render_with_message("assessment.html", form_data=form_data, message="Thanks for sharing your wellbeing update.", message_type="success")
-
-    return render_with_message("assessment.html")
-
-
-@app.route("/daily-plan", methods=["GET", "POST"])
-def daily_plan():
-    if request.method == "POST":
-        form_data = {
-            "focus": request.form.get("focus", "").strip(),
-            "action": request.form.get("action", "").strip(),
-            "reminder": request.form.get("reminder", "").strip(),
-        }
-        if not form_data["focus"] or not form_data["action"]:
-            return render_with_message("daily_plan.html", form_data=form_data, message="Please add a focus and a self-care action.", message_type="error")
-
-        data = read_user_data()
-        data["daily_plan"].append({
-            **form_data,
-            "createdAt": datetime.now(timezone.utc).isoformat(),
-        })
-        write_user_data(data)
-
-        return render_with_message("daily_plan.html", form_data=form_data, message="Your daily plan is ready.", message_type="success")
-
-    return render_with_message("daily_plan.html")
+def serve_index():
+    return send_from_directory(BASE_DIR, "index.html")
 
 
 if __name__ == "__main__":
