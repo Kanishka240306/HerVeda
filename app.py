@@ -12,13 +12,15 @@ import socket
 import re
 from datetime import datetime, timezone
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(BASE_DIR, "waitlist.json")
+DATA_DIR = os.path.join(BASE_DIR, "data")
+USER_DATA_FILE = os.path.join(DATA_DIR, "user_data.json")
 PORT = int(os.environ.get("PORT", 3000))
 
 # Only these origins are allowed to call this API from a browser.
@@ -28,7 +30,7 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 
-app = Flask(__name__, static_folder=BASE_DIR, static_url_path="")
+app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "static"), template_folder=os.path.join(BASE_DIR, "templates"))
 
 # Lock down CORS to only the origins listed above (instead of "*")
 CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
@@ -106,6 +108,44 @@ def write_waitlist(waitlist):
         json.dump(waitlist, f, indent=2)
 
 
+def ensure_data_dir():
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+
+def read_user_data():
+    ensure_data_dir()
+    if not os.path.exists(USER_DATA_FILE):
+        return {"signup": [], "login": [], "dashboard": [], "cycle_tracker": [], "assessment": [], "daily_plan": []}
+    try:
+        with open(USER_DATA_FILE, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if not content:
+                return {"signup": [], "login": [], "dashboard": [], "cycle_tracker": [], "assessment": [], "daily_plan": []}
+            data = json.loads(content)
+            return {
+                "signup": data.get("signup", []),
+                "login": data.get("login", []),
+                "dashboard": data.get("dashboard", []),
+                "cycle_tracker": data.get("cycle_tracker", []),
+                "assessment": data.get("assessment", []),
+                "daily_plan": data.get("daily_plan", []),
+            }
+    except (json.JSONDecodeError, OSError):
+        return {"signup": [], "login": [], "dashboard": [], "cycle_tracker": [], "assessment": [], "daily_plan": []}
+
+
+def write_user_data(data):
+    ensure_data_dir()
+    with open(USER_DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+
+@app.route("/debug", methods=["GET"])
+def debug():
+    print("DEBUG: Debug endpoint called")
+    return "Debug endpoint works"
+
+
 @app.route("/waitlist", methods=["POST"])
 @limiter.limit("5 per minute")
 def waitlist():
@@ -156,9 +196,150 @@ def health():
     return jsonify(status="ok", service="Herveda backend")
 
 
+def render_with_message(template_name, form_data=None, message=None, message_type="info"):
+    return render_template(
+        template_name,
+        form_data=form_data or {},
+        message=message,
+        message_type=message_type,
+    )
+
+
 @app.route("/", methods=["GET"])
-def serve_index():
-    return send_from_directory(BASE_DIR, "index.html")
+def landing():
+    return render_with_message("landing.html")
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        form_data = {
+            "name": request.form.get("name", "").strip(),
+            "email": request.form.get("email", "").strip(),
+            "goal": request.form.get("goal", "").strip(),
+        }
+        if not form_data["name"] or not form_data["email"] or not request.form.get("password", "").strip():
+            return render_with_message("signup.html", form_data=form_data, message="Please complete all fields to create your account.", message_type="error")
+
+        data = read_user_data()
+        data["signup"].append({
+            **form_data,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        })
+        write_user_data(data)
+
+        return render_with_message("signup.html", form_data=form_data, message="Account created successfully. Welcome to HerVeda!", message_type="success")
+
+    return render_with_message("signup.html")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        form_data = {
+            "email": request.form.get("email", "").strip(),
+        }
+        if not form_data["email"] or not request.form.get("password", "").strip():
+            return render_with_message("login.html", form_data=form_data, message="Please enter your email and password.", message_type="error")
+
+        data = read_user_data()
+        data["login"].append({
+            **form_data,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        })
+        write_user_data(data)
+
+        return render_with_message("login.html", form_data=form_data, message="You are logged in. Welcome back!", message_type="success")
+
+    return render_with_message("login.html")
+
+
+@app.route("/dashboard", methods=["GET", "POST"])
+def dashboard():
+    if request.method == "POST":
+        form_data = {
+            "mood": request.form.get("mood", "").strip(),
+            "note": request.form.get("note", "").strip(),
+        }
+        if not form_data["mood"]:
+            return render_with_message("dashboard.html", form_data=form_data, message="Please select how you are feeling.", message_type="error")
+
+        data = read_user_data()
+        data["dashboard"].append({
+            **form_data,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        })
+        write_user_data(data)
+
+        return render_with_message("dashboard.html", form_data=form_data, message="Your check-in has been saved.", message_type="success")
+
+    return render_with_message("dashboard.html")
+
+
+@app.route("/cycle-tracker", methods=["GET", "POST"])
+def cycle_tracker():
+    if request.method == "POST":
+        form_data = {
+            "date": request.form.get("date", "").strip(),
+            "flow": request.form.get("flow", "").strip(),
+            "symptoms": request.form.get("symptoms", "").strip(),
+        }
+        if not form_data["date"]:
+            return render_with_message("cycle_tracker.html", form_data=form_data, message="Please choose a date for your tracker entry.", message_type="error")
+
+        data = read_user_data()
+        data["cycle_tracker"].append({
+            **form_data,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        })
+        write_user_data(data)
+
+        return render_with_message("cycle_tracker.html", form_data=form_data, message="Your cycle entry has been saved.", message_type="success")
+
+    return render_with_message("cycle_tracker.html")
+
+
+@app.route("/assessment", methods=["GET", "POST"])
+def assessment():
+    if request.method == "POST":
+        form_data = {
+            "energy": request.form.get("energy", "").strip(),
+            "stress": request.form.get("stress", "").strip(),
+            "notes": request.form.get("notes", "").strip(),
+        }
+        data = read_user_data()
+        data["assessment"].append({
+            **form_data,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        })
+        write_user_data(data)
+
+        return render_with_message("assessment.html", form_data=form_data, message="Thanks for sharing your wellbeing update.", message_type="success")
+
+    return render_with_message("assessment.html")
+
+
+@app.route("/daily-plan", methods=["GET", "POST"])
+def daily_plan():
+    if request.method == "POST":
+        form_data = {
+            "focus": request.form.get("focus", "").strip(),
+            "action": request.form.get("action", "").strip(),
+            "reminder": request.form.get("reminder", "").strip(),
+        }
+        if not form_data["focus"] or not form_data["action"]:
+            return render_with_message("daily_plan.html", form_data=form_data, message="Please add a focus and a self-care action.", message_type="error")
+
+        data = read_user_data()
+        data["daily_plan"].append({
+            **form_data,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        })
+        write_user_data(data)
+
+        return render_with_message("daily_plan.html", form_data=form_data, message="Your daily plan is ready.", message_type="success")
+
+    return render_with_message("daily_plan.html")
 
 
 if __name__ == "__main__":

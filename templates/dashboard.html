@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="dashboard-grid">
+  <article class="hero-card compact">
+    <div>
+      <p class="eyebrow">Today</p>
+      <h1>Gentle check-in</h1>
+      <p>Take a moment to notice how your body feels and set one supportive intention.</p>
+    </div>
+    <form method="post" action="{{ url_for('dashboard') }}">
+      <label>
+        How are you feeling today?
+        <select name="mood">
+          <option value="steady" {% if form_data.mood|default('') == 'steady' %}selected{% endif %}>Steady</option>
+          <option value="tired" {% if form_data.mood|default('') == 'tired' %}selected{% endif %}>Tired</option>
+          <option value="balanced" {% if form_data.mood|default('') == 'balanced' %}selected{% endif %}>Balanced</option>
+        </select>
+      </label>
+      <label>
+        Quick note
+        <textarea name="note" rows="3">{{ form_data.note|default('') }}</textarea>
+      </label>
+      <button class="button primary" type="submit">Save check-in</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h3>Quick links</h3>
+    <ul>
+      <li><a href="{{ url_for('cycle_tracker') }}">Cycle tracker</a></li>
+      <li><a href="{{ url_for('assessment') }}">Assessment</a></li>
+      <li><a href="{{ url_for('daily_plan') }}">Daily plan</a></li>
+    </ul>
+  </article>
+</section>
+{% endblock %}
