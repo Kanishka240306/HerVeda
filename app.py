@@ -12,16 +12,19 @@ Requires firebase-service-account.json in the same folder as this file
 import os
 import socket
 import re
+import requests
 from datetime import datetime, timezone
+from dotenv import load_dotenv
+
+load_dotenv()  # reads variables from a .env file in this same folder, if present
 
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
-from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, auth
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SERVICE_ACCOUNT_FILE = os.path.join(BASE_DIR, "firebase-service-account.json")
@@ -39,10 +42,16 @@ ALLOWED_ORIGINS = [
 # which conflicted with Kanishka's templates/static folder structure.)
 app = Flask(__name__)
 
-# TEMPORARY: used only to sign session cookies for the login stopgap below.
-# Once real Firebase Authentication (task #4) is wired in, this session-based
-# login can be replaced with Firebase ID token verification instead.
+# Used only to sign Flask's session cookie (keeps a user "logged in" between
+# page loads). This is separate from Firebase Authentication itself.
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me-before-deploying")
+
+# Needed to verify email/password logins against Firebase Authentication.
+# Find this in Firebase Console > Project Settings (gear icon) > General tab
+# > "Web API Key". This is NOT the same as the service account key, and is
+# safe to keep in code (it's the same key Firebase's own client SDKs use
+# publicly in browsers) - but an env var is used here for tidiness.
+FIREBASE_WEB_API_KEY = os.environ.get("FIREBASE_WEB_API_KEY", "")
 
 # Lock down CORS to only the origins listed above (instead of "*")
 CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
@@ -181,17 +190,15 @@ def health():
     return jsonify(status="ok", service="Herveda backend")
 
 
-# --- Login stopgap (temporary, until task #4 real Firebase Auth) ---
-# Passwords ARE properly hashed (never stored in plain text), but this is
-# still a simplified stand-in for real authentication. It exists so the
-# rest of the app (cycle tracker, assessment, daily plan) has something to
-# tie data to right now. Swap this out for Firebase Auth ID token
-# verification when task #4 is built.
+# --- Real Firebase Authentication ---
+# Account creation and password storage are now handled entirely by Firebase
+# Authentication (not by our own code or Firestore). The `users` Firestore
+# collection only holds extra profile info (name, goal) - never passwords.
 
 def login_required(view_func):
     @wraps(view_func)
     def wrapped(*args, **kwargs):
-        if not session.get("user_email"):
+        if not session.get("uid"):
             return redirect(url_for("login"))
         return view_func(*args, **kwargs)
     return wrapped
@@ -219,21 +226,39 @@ def signup():
             message="Please fill in all required fields.", message_type="error"
         )
 
-    user_ref = db.collection(USERS_COLLECTION).document(email)
-    if user_ref.get().exists:
+    try:
+        user_record = auth.create_user(
+            email=email,
+            password=password,
+            display_name=name,
+        )
+    except auth.EmailAlreadyExistsError:
         return render_template(
             "signup.html", form_data=form_data,
             message="An account with this email already exists.", message_type="error"
         )
+    except ValueError as e:
+        # e.g. password too short (Firebase requires at least 6 characters)
+        return render_template(
+            "signup.html", form_data=form_data,
+            message=f"Could not create account: {e}", message_type="error"
+        )
+    except Exception as e:
+        app.logger.error(f"Firebase Auth signup error: {e}")
+        return render_template(
+            "signup.html", form_data=form_data,
+            message="Something went wrong creating your account.", message_type="error"
+        )
 
-    user_ref.set({
+    # Profile info only - Firebase Auth already securely stores the password.
+    db.collection(USERS_COLLECTION).document(user_record.uid).set({
         "name": name,
         "email": email,
         "goal": goal,
-        "passwordHash": generate_password_hash(password),
         "createdAt": datetime.now(timezone.utc).isoformat(),
     })
 
+    session["uid"] = user_record.uid
     session["user_email"] = email
     session["user_name"] = name
     return redirect(url_for("dashboard"))
@@ -248,22 +273,50 @@ def login():
     email = form_data.get("email", "").strip().lower()
     password = form_data.get("password", "")
 
-    user_doc = db.collection(USERS_COLLECTION).document(email).get()
-    if not user_doc.exists:
+    if not FIREBASE_WEB_API_KEY:
+        app.logger.error("FIREBASE_WEB_API_KEY is not set.")
         return render_template(
             "login.html", form_data=form_data,
-            message="No account found with that email.", message_type="error"
+            message="Server misconfiguration - contact the developer.", message_type="error"
         )
 
-    user = user_doc.to_dict()
-    if not check_password_hash(user.get("passwordHash", ""), password):
+    # The Admin SDK (used elsewhere in this file) can create/manage users,
+    # but only Firebase's own Identity Toolkit REST API can actually check
+    # a password. This is the same request Firebase's client-side SDKs make.
+    try:
+        response = requests.post(
+            "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword",
+            params={"key": FIREBASE_WEB_API_KEY},
+            json={"email": email, "password": password, "returnSecureToken": True},
+            timeout=10,
+        )
+    except requests.RequestException as e:
+        app.logger.error(f"Could not reach Firebase Auth: {e}")
         return render_template(
             "login.html", form_data=form_data,
-            message="Incorrect password.", message_type="error"
+            message="Could not reach the login service. Try again.", message_type="error"
         )
 
+    if response.status_code != 200:
+        error_message = response.json().get("error", {}).get("message", "")
+        if error_message in ("EMAIL_NOT_FOUND", "INVALID_PASSWORD", "INVALID_LOGIN_CREDENTIALS"):
+            friendly_message = "Incorrect email or password."
+        else:
+            friendly_message = "Could not log in. Please try again."
+        return render_template(
+            "login.html", form_data=form_data,
+            message=friendly_message, message_type="error"
+        )
+
+    result = response.json()
+    uid = result["localId"]
+
+    user_doc = db.collection(USERS_COLLECTION).document(uid).get()
+    user_name = user_doc.to_dict().get("name", "") if user_doc.exists else ""
+
+    session["uid"] = uid
     session["user_email"] = email
-    session["user_name"] = user.get("name", "")
+    session["user_name"] = user_name
     return redirect(url_for("dashboard"))
 
 
@@ -279,7 +332,7 @@ def dashboard():
     if request.method == "POST":
         form_data = request.form
         db.collection(CHECK_INS_COLLECTION).add({
-            "userId": session["user_email"],
+            "userId": session["uid"],
             "mood": form_data.get("mood", ""),
             "note": form_data.get("note", ""),
             "createdAt": datetime.now(timezone.utc).isoformat(),
@@ -297,7 +350,7 @@ def cycle_tracker():
     if request.method == "POST":
         form_data = request.form
         db.collection(CYCLE_LOGS_COLLECTION).add({
-            "userId": session["user_email"],
+            "userId": session["uid"],
             "date": form_data.get("date", ""),
             "flow": form_data.get("flow", ""),
             "symptoms": form_data.get("symptoms", ""),
@@ -316,7 +369,7 @@ def assessment():
     if request.method == "POST":
         form_data = request.form
         db.collection(ASSESSMENTS_COLLECTION).add({
-            "userId": session["user_email"],
+            "userId": session["uid"],
             "energy": form_data.get("energy", ""),
             "stress": form_data.get("stress", ""),
             "notes": form_data.get("notes", ""),
@@ -335,7 +388,7 @@ def daily_plan():
     if request.method == "POST":
         form_data = request.form
         db.collection(DAILY_PLANS_COLLECTION).add({
-            "userId": session["user_email"],
+            "userId": session["uid"],
             "focus": form_data.get("focus", ""),
             "action": form_data.get("action", ""),
             "reminder": form_data.get("reminder", ""),
