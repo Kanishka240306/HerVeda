@@ -104,6 +104,16 @@ a { color: var(--primary-dark); text-decoration: none; }
   background: #fcecf2;
   color: var(--primary-dark);
 }
+.form-card .button.secondary {
+  width: 100%;
+  text-align: center;
+}
+.divider {
+  text-align: center;
+  color: #9a8a90;
+  margin: 0.6rem 0;
+  font-size: 0.9rem;
+}
 
 .card-grid, .dashboard-grid {
   display: grid;

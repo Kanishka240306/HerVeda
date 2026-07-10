@@ -82,6 +82,22 @@ ASSESSMENTS_COLLECTION = "symptomAssessments"
 DAILY_PLANS_COLLECTION = "dailyPlans"
 CHECK_INS_COLLECTION = "checkIns"
 
+# Public web config used by Firebase's client-side JS (for Google Sign-In).
+# These values are NOT secret - they're the same config any Firebase web app
+# embeds directly in its browser code. Find them in Firebase Console >
+# Project Settings > General > Your apps > Config.
+FIREBASE_CLIENT_CONFIG = {
+    "apiKey": FIREBASE_WEB_API_KEY,
+    "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", "herveda-88d0e.firebaseapp.com"),
+    "projectId": os.environ.get("FIREBASE_PROJECT_ID", "herveda-88d0e"),
+    "appId": os.environ.get("FIREBASE_APP_ID", "1:940618719589:web:056228514f89edb2d3418c"),
+}
+
+
+@app.context_processor
+def inject_firebase_client_config():
+    return {"firebase_config": FIREBASE_CLIENT_CONFIG}
+
 EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
 
@@ -324,6 +340,46 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("landing"))
+
+
+@app.route("/google-signin", methods=["POST"])
+def google_signin():
+    """
+    Called by JS after a successful Google popup sign-in (see static/js/script.js).
+    The browser gets a Firebase ID token from Google; we verify it here using
+    the Admin SDK before trusting it and creating a session.
+    """
+    body = request.get_json(silent=True) or {}
+    id_token = body.get("idToken", "")
+
+    if not id_token:
+        return jsonify(success=False, message="Missing sign-in token."), 400
+
+    try:
+        decoded_token = auth.verify_id_token(id_token)
+    except Exception as e:
+        app.logger.error(f"Google sign-in token verification failed: {e}")
+        return jsonify(success=False, message="Could not verify Google sign-in."), 401
+
+    uid = decoded_token["uid"]
+    email = decoded_token.get("email", "")
+    name = decoded_token.get("name", email.split("@")[0] if email else "")
+
+    user_ref = db.collection(USERS_COLLECTION).document(uid)
+    if not user_ref.get().exists:
+        # First time this Google account has signed in - create a profile.
+        # No "goal" yet since that only comes from the manual signup form.
+        user_ref.set({
+            "name": name,
+            "email": email,
+            "goal": "",
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        })
+
+    session["uid"] = uid
+    session["user_email"] = email
+    session["user_name"] = name
+    return jsonify(success=True, redirect=url_for("dashboard"))
 
 
 @app.route("/dashboard", methods=["GET", "POST"])

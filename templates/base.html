@@ -6,6 +6,18 @@
     <title>HerVeda</title>
     <meta name="description" content="Gentle wellness support for every phase of your cycle." />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script>
+      // Public config for Firebase's client-side SDK (safe to expose in
+      // browser code - this is not a secret credential).
+      firebase.initializeApp({
+        apiKey: "{{ firebase_config.apiKey }}",
+        authDomain: "{{ firebase_config.authDomain }}",
+        projectId: "{{ firebase_config.projectId }}",
+        appId: "{{ firebase_config.appId }}"
+      });
+    </script>
     <script defer src="{{ url_for('static', filename='js/script.js') }}"></script>
   </head>
   <body>
