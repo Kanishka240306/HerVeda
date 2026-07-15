@@ -158,27 +158,27 @@ Each entry includes a UTC `createdAt` timestamp for data tracking.
 
 | Login | Landing-home |
 |-------|----------|
-| ![Login](assessts/01-login.png) | ![Landing-home](assessts/02-landing-home.png) |
+| ![Login](assests/01-login.png) | ![Landing-home](assests/02-landing-home.png) |
 
 | Landing-home-scrolled | signup |
 |-------------|--------------|
-| ![Landing-home-scrolled](assessts/03-landing-home-scrolled.png) | ![signup](assessts/04-signup.png) |
+| ![Landing-home-scrolled](assests/03-landing-home-scrolled.png) | ![signup](assests/04-signup.png) |
 
 | signup-scrolled | dashboard-checkin |
 |--------------|---------------------|
-| ![signup-scrolled](assessts/05-signup-scrolled.png) | ![dashboard-checkin](assessts/06-dashboard-checkin.png) |
+| ![signup-scrolled](assests/05-signup-scrolled.png) | ![dashboard-checkin](assests/06-dashboard-checkin.png) |
 
 | dashboard-checkin-scrolled | cycle -tracker |
 |-----------------------|--------------------|
-| ![dashboard-checkin-scrolled](assessts/07-dashboard-checkin-scrolled.png) | ![cycle-tracker](assessts/08-cycle-tracker.png) |
+| ![dashboard-checkin-scrolled](assests/07-dashboard-checkin-scrolled.png) | ![cycle-tracker](assests/08-cycle-tracker.png) |
 
 | cycle-tracker-scrolled | daily-plan |
 |----------------------|-------------|
-| ![cycle-tracker-scrolled](assessts/09-cycle-tracker-scrolled.png) | ![daily-plan](assessts/10-daily-plan.png)|
+| ![cycle-tracker-scrolled](assests/09-cycle-tracker-scrolled.png) | ![daily-plan](assests/10-daily-plan.png)|
 
 | daily-plan-scrolled | assessment |
 |------------------|-------------|
-| ![daily-plan-scrolled](assessts/11-daily-plan-scrolled.png) | ![assessment](assessts/12-assessment.png)|
+| ![daily-plan-scrolled](assests/11-daily-plan-scrolled.png) | ![assessment](assessts/12-assesment.png)|
 
 | assessment-scrolled |
 |-------------------|
