@@ -158,31 +158,31 @@ Each entry includes a UTC `createdAt` timestamp for data tracking.
 
 | Login | Landing-home |
 |-------|----------|
-| ![Login](screenshots/01-login.png) | ![Landing-home](screenshots/02-landing-home.png) |
+| ![Login](assessts/01-login.png) | ![Landing-home](assessts/02-landing-home.png) |
 
 | Landing-home-scrolled | signup |
 |-------------|--------------|
-| ![Landing-home-scrolled](screenshots/03-landing-home-scrolled.png) | ![signup](screenshots/04-signup.png) |
+| ![Landing-home-scrolled](assessts/03-landing-home-scrolled.png) | ![signup](assessts/04-signup.png) |
 
 | signup-scrolled | dashboard-checkin |
 |--------------|---------------------|
-| ![signup-scrolled](screenshots/05-signup-scrolled.png) | ![dashboard-checkin](screenshots/06-dashboard-checkin.png) |
+| ![signup-scrolled](assessts/05-signup-scrolled.png) | ![dashboard-checkin](assessts/06-dashboard-checkin.png) |
 
 | dashboard-checkin-scrolled | cycle -tracker |
 |-----------------------|--------------------|
-| ![dashboard-checkin-scrolled](screenshots/07-dashboard-checkin-scrolled.png) | ![cycle-tracker](screenshots/08-cycle-tracker.png) |
+| ![dashboard-checkin-scrolled](assessts/07-dashboard-checkin-scrolled.png) | ![cycle-tracker](assessts/08-cycle-tracker.png) |
 
 | cycle-tracker-scrolled | daily-plan |
 |----------------------|-------------|
-| ![cycle-tracker-scrolled](screenshots/09-cycle-tracker-scrolled.png) | ![daily-plan](screenshots/10-daily-plan.png)|
+| ![cycle-tracker-scrolled](assessts/09-cycle-tracker-scrolled.png) | ![daily-plan](assessts/10-daily-plan.png)|
 
 | daily-plan-scrolled | assessment |
 |------------------|-------------|
-| ![daily-plan-scrolled](screenshots/11-daily-plan-scrolled.png) | ![assessment](screenshots/12-assessment.png)|
+| ![daily-plan-scrolled](assessts/11-daily-plan-scrolled.png) | ![assessment](assessts/12-assessment.png)|
 
 | assessment-scrolled |
 |-------------------|
-| ![assessment-scrolled](screenshots/13-assessment-scrolled.png)|
+| ![assessment-scrolled](assessts/13-assessment-scrolled.png)|
 
 
 ## �👥 Team
