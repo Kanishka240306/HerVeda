@@ -178,11 +178,11 @@ Each entry includes a UTC `createdAt` timestamp for data tracking.
 
 | daily-plan-scrolled | assessment |
 |------------------|-------------|
-| ![daily-plan-scrolled](assests/11-daily-plan-scrolled.png) | ![assessment](assessts/12-assesment.png)|
+| ![daily-plan-scrolled](assests/11-daily-plan-scrolled.png) | ![assessment](assests/12-assessment.png)|
 
 | assessment-scrolled |
 |-------------------|
-| ![assessment-scrolled](assessts/13-assessment-scrolled.png)|
+| ![assessment-scrolled](assests/13-assessment-scrolled.png)|
 
 
 ## �👥 Team
